@@ -212,21 +212,17 @@ def train_bpe(
                 pair_to_words.setdefault(pair, set()).add(new_word)
     return vocab, merges
 
-if __name__ == "__main__":
-    input_path = "/home/lu0qlng/cs336/assignment1-basics/data/owt_train.txt"
-    # input_path = "/home/lu0qlng/cs336/assignment1-basics/tests/fixtures/corpus.en"
-    vocab, merges = train_bpe(input_path, 30000, ["<|endoftext|>"])
-    
+def save_bpe_json(vocab: dict[int, bytes], merges: list[tuple[bytes, bytes]], out_path: str, dataset: str):
     import json
-    def save_bpe_json(vocab: dict[int, bytes], merges: list[tuple[bytes, bytes]], out_path: str):
-        vocab_serializable = {v.decode("utf-8", errors="replace"): str(k) for k, v in vocab.items()}
-        merges_serializable = [f"{a.decode('utf-8', errors='replace')} {b.decode('utf-8', errors='replace')}\n" for a, b in merges]
+    vocab_serializable = {v.decode("utf-8", errors="replace"): str(k) for k, v in vocab.items()}
+    merges_serializable = [f"{a.decode('utf-8', errors='replace')} {b.decode('utf-8', errors='replace')}\n" for a, b in merges]
+    
+    with open(out_path+"vocab_"+dataset+".json", "w", encoding="utf-8") as f:
+        json.dump(vocab_serializable, f, indent=2)
         
-        with open(out_path+"vocab_owt.json", "w", encoding="utf-8") as f:
-            json.dump(vocab_serializable, f, indent=2)
-            
-        with open(out_path+"merges_owt.txt", "w", encoding="utf-8") as f:
-            f.writelines(merges_serializable)
-            
-    save_bpe_json(vocab, merges, "/home/lu0qlng/cs336/assignment1-basics/tests/fixtures/")
+    with open(out_path+"merges_"+dataset+".txt", "w", encoding="utf-8") as f:
+        f.writelines(merges_serializable)
+
+if __name__ == "__main__":
+    
     pass
