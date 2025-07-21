@@ -39,8 +39,31 @@ def problem_unicode2() -> None:
     except Exception as e:
         print("Error in process `bytes([255, 235])`")
         print(e)
+
+@parting_line
+def problem_train_bpe_tinystories() -> None:
+    # run with command line
+    # python -m cprofile -o ./results/result_tiny.prof problems.py
+    
+    from cs336_basics.bpe_tokenizer import train_bpe, save_bpe_json
+    vocab, merges = train_bpe("./data/TinyStoriesV2-GPT4-train.txt", 10000, ["<|endoftext|>"])
+    save_bpe_json(vocab, merges, "./results/", "tiny")
+
+@parting_line
+def problem_train_bpe_expts_owt() -> None:
+    from cs336_basics.bpe_tokenizer import train_bpe, save_bpe_json
+    vocab, merges = train_bpe("./data/OpenWebText_sample.txt", 32000, ["<|endoftext|>"])
+    save_bpe_json(vocab, merges, "./results/", "owt")
+
+@parting_line
+def problem_train_bpe_tinystories_profile() -> None:
+    import pstats
+
+    p = pstats.Stats("./results/result_tiny.prof")
+    p.strip_dirs().sort_stats("cumtime").print_stats(30)  # 打印耗时前30的函数
+
+
     
     
 if __name__ == '__main__':
-    problem_unicode1()
-    problem_unicode2()
+    problem_train_bpe_tinystories_profile()

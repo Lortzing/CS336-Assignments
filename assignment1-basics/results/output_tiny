@@ -1,0 +1,2 @@
+📥 Training on tiny dataset: ./data/TinyStoriesV2-GPT4-train.txt
+  0%|          | 0/999 [00:00<?, ?it/s]100%|██████████| 999/999 [00:00<00:00, 171395.66it/s]

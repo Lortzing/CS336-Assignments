@@ -7,6 +7,8 @@ wheels/
 *.egg-info
 
 **/data/
+**/.history/
+.history/
 
 # Virtual environments
 .venv
