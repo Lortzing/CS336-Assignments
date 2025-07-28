@@ -127,6 +127,8 @@ class PairFreq:
         return self.pair > other.pair
 
 def train_bpe(input_path: str|os.PathLike, vocab_size: int, special_tokens: List[str], desired_num_chunks: int = 1000) -> Tuple[Dict[int, bytes], List[Tuple[bytes, bytes]]]:
+    if special_tokens:
+        special_tokens.sort(key=len, reverse=True)
     # 初始化词汇表
     vocab = vocabulary_init(special_tokens)
     merges: List[Tuple[bytes, bytes]] = []
@@ -234,15 +236,33 @@ def train_bpe(input_path: str|os.PathLike, vocab_size: int, special_tokens: List
     
     return vocab, merges
 
-def save_bpe_json(vocab: dict[int, bytes], merges: list[tuple[bytes, bytes]], out_path: str, dataset: str):
+def save_bpe_json(
+    vocab: dict[int, bytes],
+    merges: list[tuple[bytes, bytes]],
+    out_path: str,
+    dataset: str,
+):
     import json
-    vocab_serializable = {v.decode("utf-8", errors="replace"): str(k) for k, v in vocab.items()}
-    merges_serializable = [f"{a.decode('utf-8', errors='replace')} {b.decode('utf-8', errors='replace')}\n" for a, b in merges]
-    
-    with open(out_path+"vocab_"+dataset+".json", "w", encoding="utf-8") as f:
-        json.dump(vocab_serializable, f, indent=2)
-        
-    with open(out_path+"merges_"+dataset+".txt", "w", encoding="utf-8") as f:
+    os.makedirs(out_path, exist_ok=True)
+
+    # 1. 构造 token -> id 的 dict，注意需要排序以保持一致性
+    vocab_serializable = {
+        v.decode("utf-8", errors="replace"): k for k, v in sorted(vocab.items(), key=lambda x: x[0])
+    }
+
+    # 2. 构造 merges.txt
+    merges_serializable = []
+    for a, b in merges:
+        a_decoded = a.decode("utf-8", errors="replace")
+        b_decoded = b.decode("utf-8", errors="replace")
+        merges_serializable.append(f"{a_decoded} {b_decoded}\n")
+
+    # 3. 写入 vocab.json
+    with open(os.path.join(out_path, f"vocab_{dataset}.json"), "w", encoding="utf-8") as f:
+        json.dump(vocab_serializable, f, indent=2, ensure_ascii=False)
+
+    # 4. 写入 merges.txt
+    with open(os.path.join(out_path, f"merges_{dataset}.txt"), "w", encoding="utf-8") as f:
         f.writelines(merges_serializable)
 
 if __name__ == "__main__":

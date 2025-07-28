@@ -1,53 +1,64 @@
-import argparse
+import json
 import os
-from cs336_basics.bpe_tokenizer import train_bpe, save_bpe_json
-from cs336_basics.bpe_old import train_bpe as bpe_old
+import re
 
-configs = {
-    "tiny": {
-        "input": "./data/TinyStoriesV2-GPT4-train.txt",
-        "vocab_size": 10000,
-        "output_prefix": "tiny"
-    },
-    "owt": {
-        "input": "./data/owt_train.txt",
-        "vocab_size": 32000,
-        "output_prefix": "owt"
-    }
-}
+def fix_vocab_file(input_path: str, output_path: str):
+    with open(input_path, "r", encoding="utf-8") as f:
+        vocab = json.load(f)
 
-def main():
-    parser = argparse.ArgumentParser(description="Train BPE for predefined datasets.")
-    parser.add_argument(
-        "--dataset", type=str, choices=["tiny", "owt"], required=True,
-        help="Dataset to train on: 'tiny' for TinyStories, 'owt' for OpenWebText sample"
-    )
-    args = parser.parse_args()
+    fixed_vocab = {}
 
-    # 预定义配置
-    config = configs[args.dataset]
-    output_dir = "./results/"
-    os.makedirs(output_dir, exist_ok=True)
+    for token, idx in vocab.items():
+        # 将 id 从 str 转为 int
+        fixed_vocab[token] = int(idx)
 
-    print(f"📥 Training on {args.dataset} dataset: {config['input']}")
-    vocab, merges = train_bpe(config["input"], config["vocab_size"], ["<|endoftext|>"])
+    # sort by ID for consistency
+    fixed_vocab = dict(sorted(fixed_vocab.items(), key=lambda x: x[1]))
 
-    save_bpe_json(vocab, merges, output_dir, config["output_prefix"])
-    print("✅ Done.")
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(fixed_vocab, f, indent=2, ensure_ascii=False)
+
+    print(f"✅ Fixed vocab saved to: {output_path}")
 
 
-def test():
-    import time
-    
-    time1 = time.perf_counter()
-    vocab, merges = train_bpe("./data/TinyStoriesV2-GPT4-train.txt", 10000, ["<|endoftext|>"])
-    time2 = time.perf_counter()
-    vocab, merges = bpe_old("./data/TinyStoriesV2-GPT4-train.txt", 10000, ["<|endoftext|>"])
-    time3 = time.perf_counter()
-    print(f"Old BPE time: {time2 - time1}")
-    print(f"New BPE time: {time3 - time2}")
-    
-    
+def fix_merges_file(input_path: str, output_path: str):
+    with open(input_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    fixed_lines = []
+
+    # Add version header
+    fixed_lines.append("#version: 0.2\n")
+
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        # Remove accidental quote characters
+        line = line.replace('"', '').replace("'", '')
+
+        # Split on whitespace, must be exactly 2 parts
+        parts = re.split(r'\s+', line)
+        if len(parts) == 2:
+            fixed_lines.append(f"{parts[0]} {parts[1]}\n")
+        else:
+            print(f"⚠️ Skipping malformed line: {line}")
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.writelines(fixed_lines)
+
+    print(f"✅ Fixed merges saved to: {output_path}")
+
 
 if __name__ == "__main__":
-    test()
+    # 替换为你的实际路径
+    dataset = "tiny"
+    input_vocab = f"./results/vocab_{dataset}.json"
+    input_merges = f"./results/merges_{dataset}.txt"
+
+    output_vocab = f"./results/vocab_{dataset}_fixed.json"
+    output_merges = f"./results/merges_{dataset}_fixed.txt"
+
+    fix_vocab_file(input_vocab, output_vocab)
+    fix_merges_file(input_merges, output_merges)

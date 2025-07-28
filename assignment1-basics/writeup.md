@@ -54,3 +54,5 @@ Answer:
 Answer:
 - Example: `bytes([255, 235])`
 - This byte sequence is not a valid UTF-8 encoding—`0xff` is not a valid start byte in UTF-8, so decoding this will raise a UnicodeDecodeError.
+
+
