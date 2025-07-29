@@ -7,6 +7,7 @@ from cs336_basics.model import TransformerLM
 from cs336_basics.training_utils import data_loading, cross_entropy, gradient_clipping, save_checkpoint, load_checkpoint
 from cs336_basics.optimizer import AdamW
 import os
+import time
 
 def train(args):
     wandb.init(project=args.wandb_project, config=vars(args))
@@ -34,8 +35,9 @@ def train(args):
         wandb.run.name = f"resumed-{os.path.basename(config.resume_from)}"
     
     loss_fn = cross_entropy
+    start_time = time.time()
 
-    for step in range(config.max_steps):
+    for step in range(start_step, config.max_steps):
         model.train()
         x, y = data_loading(train_data, config.batch_size, config.context_length, config.device)
 
@@ -50,8 +52,13 @@ def train(args):
         optimizer.step()
 
         if step % config.log_interval == 0:
-            print(f"[{step}] Train loss: {loss.item():.4f}")
-            wandb.log({"train_loss": loss.item(), "step": step})
+            elapsed_time = time.time() - start_time
+            print(f"[{step}] Train loss: {loss.item():.4f} | Time: {elapsed_time:.2f}s")
+            wandb.log({
+                "train_loss": loss.item(),
+                "step": step,
+                "wallclock_time": elapsed_time,
+            })
 
         if step % config.eval_interval == 0 and step > 0:
             model.eval()
@@ -59,9 +66,14 @@ def train(args):
                 xb_val, yb_val = data_loading(val_data, config.batch_size, config.context_length, config.device)
                 val_logits = model(xb_val)
                 val_loss = loss_fn(val_logits.view(-1, val_logits.size(-1)), yb_val.view(-1))
-                print(f"[{step}] Validation loss: {val_loss.item():.4f}")
-                wandb.log({"val_loss": val_loss.item(), "step": step})
-
+                elapsed_time = time.time() - start_time
+                print(f"[{step}] Validation loss: {val_loss.item():.4f} | Time: {elapsed_time:.2f}s")
+                wandb.log({
+                    "val_loss": val_loss.item(),
+                    "step": step,
+                    "wallclock_time": elapsed_time,
+                })
+                
         if config.ckpt_path and step % config.ckpt_interval == 0:
             ckpt_file = f"{config.ckpt_path}/step_{step}.pt"
             save_checkpoint(model, optimizer, step, ckpt_file)
