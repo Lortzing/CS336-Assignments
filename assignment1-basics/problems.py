@@ -56,15 +56,15 @@ def problem_train_bpe_tinystories() -> None:
     # run with command line
     # python -m cprofile -o ./results/result_tiny.prof problems.py
     
-    from cs336_basics.tokenizer_train import train_bpe, save_bpe_json
+    from cs336_basics.tokenizer_train import train_bpe, save_bpe
     vocab, merges = train_bpe("./data/TinyStoriesV2-GPT4-train.txt", 10000, ["<|endoftext|>"])
-    save_bpe_json(vocab, merges, "./results/", "tiny")
+    save_bpe(vocab, merges, "./results/", "tiny")
 
 @parting_line
 def problem_train_bpe_expts_owt() -> None:
-    from cs336_basics.tokenizer_train import train_bpe, save_bpe_json
+    from cs336_basics.tokenizer_train import train_bpe, save_bpe
     vocab, merges = train_bpe("./data/OpenWebText_sample.txt", 32000, ["<|endoftext|>"])
-    save_bpe_json(vocab, merges, "./results/", "owt")
+    save_bpe(vocab, merges, "./results/", "owt")
 
 @parting_line
 def problem_train_bpe_tinystories_profile() -> None:
@@ -99,7 +99,7 @@ def problem_transformer_accounting_trainable_parameters() -> None:
     """
     
     import torch
-    from cs336_basics.transformer import TransformerLM
+    from cs336_basics.model import TransformerLM
 
     def count_parameters(model: torch.nn.Module) -> int:
         return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -152,7 +152,7 @@ def problem_transformer_accounting_matrix_multiplication_flops() -> None:
         LM Head: 2bsdv
     """
     import torch
-    from cs336_basics.transformer import TransformerLM
+    from cs336_basics.model import TransformerLM
     from fvcore.nn import FlopCountAnalysis
 
     model = TransformerLM(

@@ -12,6 +12,7 @@ wheels/
 
 *.npy
 *.pt
+*.memmap
 
 # Virtual environments
 .venv
