@@ -1,17 +1,16 @@
 import torch
 from cs336_basics.model import softmax
 
-def top_p_sampling(probs: torch.Tensor, p: float) -> int | float:
+def top_p_sampling(probs: torch.Tensor, p: float) -> int:
     sorted_probs, sorted_indices = torch.sort(probs, descending=True)
     cumulative_probs = torch.cumsum(sorted_probs, dim=-1)
 
     # Select smallest subset of tokens whose cumulative probability exceeds p
     cutoff = torch.searchsorted(cumulative_probs, p)
-    top_indices = sorted_indices[:cutoff + 1]
+    top_indices: torch.LongTensor = sorted_indices[:cutoff + 1]
     top_probs = probs[top_indices]
     top_probs = top_probs / top_probs.sum()  # renormalize
 
-    # Sample from the filtered distribution
     sampled_idx = torch.multinomial(top_probs, num_samples=1)
     return top_indices[sampled_idx].item()
 

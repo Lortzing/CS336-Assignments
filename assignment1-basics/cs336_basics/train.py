@@ -4,11 +4,13 @@ import torch
 import wandb
 
 from cs336_basics.model import TransformerLM
-from cs336_basics.training_utils import data_loading, cross_entropy, gradient_clipping, save_checkpoint, load_checkpoint
+from cs336_basics.training_utils import data_loading, cross_entropy, gradient_clipping, save_checkpoint, load_checkpoint, set_all_seeds
 from cs336_basics.optimizer import AdamW
 import os
 import time
-torch.autograd.set_detect_anomaly(True)
+
+# torch.autograd.set_detect_anomaly(True)
+set_all_seeds(42)
 
 def train(args):
     wandb.init(project=args.wandb_project, config=vars(args))
@@ -32,13 +34,13 @@ def train(args):
     start_step = 0
     if config.resume_from:
         start_step = load_checkpoint(config.resume_from, model, optimizer)
-        print(f"✅ Resumed from checkpoint {config.resume_from} at step {start_step}")
+        print(f"Resumed from checkpoint {config.resume_from} at step {start_step}")
         wandb.run.name = f"resumed-{os.path.basename(config.resume_from)}"
     
     loss_fn = cross_entropy
     start_time = time.time()
 
-    for step in range(start_step, config.max_steps):
+    for step in range(start_step+1, config.max_steps+1):
         model.train()
         x, y = data_loading(train_data, config.batch_size, config.context_length, config.device)
 
@@ -61,7 +63,7 @@ def train(args):
                 "wallclock_time": elapsed_time,
             })
 
-        if step % config.eval_interval == 0 and step > 0:
+        if step % config.eval_interval == 0:
             model.eval()
             with torch.no_grad():
                 xb_val, yb_val = data_loading(val_data, config.batch_size, config.context_length, config.device)
@@ -80,6 +82,7 @@ def train(args):
             save_checkpoint(model, optimizer, step, ckpt_file)
             print(f"Saved checkpoint to {ckpt_file}")
             wandb.save(ckpt_file)
+        wandb.finish()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -127,12 +130,13 @@ uv run cs336_basics/train.py \
   --max_steps 4000 \
   --vocab_size 10000 \
   --context_length 128 \
-  --batch_size 64 \
+  --batch_size 4 \
   --d_model 768 \
   --num_heads 12 \
   --num_layers 12 \
   --d_ff 3072 \
   --ckpt_path ./checkpoints \
+  --ckpt_interval 500 \
   --wandb_project transformer-test
 
 python train.py \

@@ -305,7 +305,7 @@ def problem_learning_rate_tuning() -> None:
     print("Saved: results/learning_rate_tuning.png")
 
 @parting_line
-def problem_adamwAccounting():
+def problem_adamwAccounting(vocab_size: int = vocab_size, context_length: int = context_length, num_layers: int = num_layers, d_model: int = d_model, num_heads: int = num_heads, d_ff: int = d_ff, MAX_MEMORY: int = 80) -> None:
     """
     vocab_size: v
     context_length: s
@@ -341,8 +341,6 @@ def problem_adamwAccounting():
     = 8vd + 2bsd + bsv + 4l(4d^2 + 3df + 2d) + l(6bsd + 3bs^2 + 3bsf) + 4d + sd/h
     = b(2sd + sv + l(6sd + 3s^2h + 3sf)) + 4d + sd/h + 8vd + 4l(4d^2 + 3df + 2d)
     """
-    
-    MAX_MEMORY = 80
     
     s = context_length
     d = d_model
@@ -428,4 +426,4 @@ def problem_adamwAccounting_train_time():
     
     
 if __name__ == '__main__':
-    problem_adamwAccounting_train_time()
+    problem_adamwAccounting(10000, 128, 12, 768, 12, 3072, 8)

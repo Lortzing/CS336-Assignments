@@ -6,7 +6,12 @@ from einops import rearrange, einsum
 import numpy as np
 import os
 from typing import BinaryIO, IO
-
+import random
+def set_all_seeds(seed: int):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
 
 def cross_entropy(logits: torch.Tensor, targets: torch.Tensor):
     if logits.ndim == 3:
