@@ -14,5 +14,6 @@ wheels/
 *.pt
 *.memmap
 
+wandb/
 # Virtual environments
 .venv

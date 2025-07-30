@@ -281,6 +281,7 @@ class Tokenizer:
 
 if __name__ == '__main__':
     tokenizer = Tokenizer.from_files(vocab_filepath="./results/vocab_tiny_gpt2.json", merges_filepath="./results/merges_tiny_gpt2.txt", special_tokens=["<|endoftext|>"])
-    tokenizer.encode_file_to_memmap_parallel(input_path="./data/TinyStoriesV2-GPT4-train.txt", output_path="./results/TinyStoriesV2-GPT4-train.memmap")
-    tokenizer.encode_file_to_memmap_parallel(input_path="./data/TinyStoriesV2-GPT4-valid.txt", output_path="./results/TinyStoriesV2-GPT4-valid.memmap")
+    # tokenizer.encode_file_to_memmap_parallel(input_path="./data/TinyStoriesV2-GPT4-train.txt", output_path="./results/TinyStoriesV2-GPT4-train.memmap")
+    # tokenizer.encode_file_to_memmap_parallel(input_path="./data/TinyStoriesV2-GPT4-valid.txt", output_path="./results/TinyStoriesV2-GPT4-valid.memmap")
+    tokenizer.encode_file_to_memmap_parallel(input_path="./tests/fixtures/tinystories_sample_5M.txt", output_path="./results/tiny_sample_5M.memmap")
     

@@ -236,8 +236,8 @@ class TransformerBlock(nn.Module):
         return cls(d_model, num_heads, d_ff, rope, device=device, dtype=dtype)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x += self.attn(self.ln1(x))
-        x += self.ffn(self.ln2(x))
+        x = x + self.attn(self.ln1(x))
+        x = x + self.ffn(self.ln2(x))
         return x
 
 

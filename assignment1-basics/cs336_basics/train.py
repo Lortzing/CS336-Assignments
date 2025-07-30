@@ -8,6 +8,7 @@ from cs336_basics.training_utils import data_loading, cross_entropy, gradient_cl
 from cs336_basics.optimizer import AdamW
 import os
 import time
+torch.autograd.set_detect_anomaly(True)
 
 def train(args):
     wandb.init(project=args.wandb_project, config=vars(args))
@@ -120,6 +121,20 @@ if __name__ == "__main__":
 
 
 """
+uv run cs336_basics/train.py \
+  --train_data_path ./results/tiny_sample_5M.memmap.npy \
+  --val_data_path ./results/tiny_sample_5M.memmap.npy \
+  --max_steps 4000 \
+  --vocab_size 10000 \
+  --context_length 128 \
+  --batch_size 64 \
+  --d_model 768 \
+  --num_heads 12 \
+  --num_layers 12 \
+  --d_ff 3072 \
+  --ckpt_path ./checkpoints \
+  --wandb_project transformer-test
+
 python train.py \
   --train_data_path ./data/tokens_train.npy \
   --val_data_path ./data/tokens_val.npy \
