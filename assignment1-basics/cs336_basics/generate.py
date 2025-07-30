@@ -25,7 +25,7 @@ def decoding(
     top_p: float = 0.9,
     eos_token_id: int | None = None,
     device: str | torch.device = "cpu",
-) -> list[int]:
+) -> str:
     model.eval()
     generated = list(prompt)
     x = torch.tensor(prompt, dtype=torch.long, device=device).unsqueeze(0)
@@ -47,5 +47,24 @@ def decoding(
         if eos_token_id is not None and next_token == eos_token_id:
             break
         x = torch.tensor(generated, dtype=torch.long, device=device).unsqueeze(0)
+    
+    generated = tokenizer.decode(generated)
 
     return generated
+
+if __name__ == '__main__':
+    from cs336_basics.model import TransformerLM
+    from cs336_basics.tokenizer import Tokenizer
+    model = TransformerLM(
+        vocab_size=10000,
+        d_model=768,
+        num_heads=12,
+        num_layers=12,
+        context_length=128,
+        d_ff=3072,
+        rope_theta=10000,
+    ).to("cuda")
+    model.load_state_dict(torch.load("./checkpoints/step_3500.pt", map_location="cuda:0", weights_only=True)["model"])
+    tokenizer = Tokenizer.from_files(vocab_filepath="./results/vocab_tiny_gpt2.json", merges_filepath="./results/merges_tiny_gpt2.txt")
+    prompt = tokenizer.encode("hello,")
+    print(decoding(model, prompt, device="cuda:0"))
