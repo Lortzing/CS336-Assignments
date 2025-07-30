@@ -10,5 +10,8 @@ wheels/
 **/.history/
 .history/
 
+*.npy
+*.pt
+
 # Virtual environments
 .venv
