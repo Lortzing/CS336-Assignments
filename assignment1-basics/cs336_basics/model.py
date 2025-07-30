@@ -244,6 +244,13 @@ class TransformerBlock(nn.Module):
 class TransformerLM(nn.Module):
     def __init__(self, vocab_size: int, context_length: int, num_layers: int, d_model: int, num_heads: int, d_ff: int, rope_theta: float, device: Optional[torch.device] = None, dtype: Optional[torch.dtype] = None):
         super(TransformerLM, self).__init__()
+        self.vocab_size = vocab_size
+        self.context_length = context_length
+        self.num_layers = num_layers
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.d_ff = d_ff        
+        
         self.token_embeddings = Embedding(vocab_size, d_model, device=device, dtype=dtype)
         self.rope = RoPE(rope_theta, d_model // num_heads, context_length, device=device, dtype=dtype)
         self.layers = nn.ModuleList([TransformerBlock(d_model, num_heads, d_ff, self.rope, device=device, dtype=dtype) for _ in range(num_layers)])
